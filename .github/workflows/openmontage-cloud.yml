@@ -1,0 +1,74 @@
+name: OpenMontage Cloud Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - cloud-setup
+    paths:
+      - ".github/workflows/openmontage-cloud.yml"
+
+jobs:
+  test-openmontage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install FFmpeg and Make
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg make
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip install piper-tts
+
+      - name: Install Remotion dependencies
+        working-directory: remotion-composer
+        run: npm install
+
+      - name: Prepare environment
+        run: cp -n .env.example .env || true
+
+      - name: Verify runtime
+        run: |
+          python --version
+          node --version
+          ffmpeg -version | head -1
+
+      - name: Discover OpenMontage capabilities
+        run: |
+          python -c "from tools.tool_registry import registry; import json; registry.discover(); print(json.dumps(registry.support_envelope(), indent=2))"
+
+      - name: Save diagnostic report
+        if: always()
+        run: |
+          mkdir -p artifacts
+          {
+            echo "OpenMontage cloud diagnostic"
+            date -u
+            python --version 2>&1
+            node --version 2>&1
+            ffmpeg -version 2>&1 | head -1
+          } > artifacts/diagnostic.txt
+
+      - name: Upload diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: openmontage-diagnostic
+          path: artifacts/
