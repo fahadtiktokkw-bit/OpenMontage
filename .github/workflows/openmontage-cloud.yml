@@ -1,4 +1,4 @@
-name: OpenMontage Cloud Render
+name: Almusaileem Vertical Video
 
 on:
   workflow_dispatch:
@@ -9,59 +9,35 @@ on:
       - ".github/workflows/openmontage-cloud.yml"
 
 jobs:
-  render-openmontage:
+  render-almusaileem:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Install FFmpeg and Make
+      - name: Install FFmpeg
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg make
+          sudo apt-get install -y ffmpeg
 
-      - name: Install Python dependencies
+      - name: Create Almusaileem 9x16 reel
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
-          python -m pip install piper-tts
+          mkdir -p projects/almusaileem/output
+          ffmpeg -y -i projects/VID-20260921-WA0004.mp4 \
+            -vf "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,eq=contrast=1.04:saturation=1.03:brightness=0.01,fade=t=in:st=0:d=0.35,fade=t=out:st=18.4:d=0.6" \
+            -c:v libx264 -preset medium -crf 19 -pix_fmt yuv420p \
+            -c:a aac -b:a 192k -movflags +faststart \
+            projects/almusaileem/output/almusaileem-microcement-reel.mp4
 
-      - name: Install Remotion dependencies
-        working-directory: remotion-composer
-        run: npm install
-
-      - name: Prepare environment
-        run: cp -n .env.example .env || true
-
-      - name: Verify OpenMontage
+      - name: Verify output
         run: |
-          python --version
-          node --version
-          ffmpeg -version | head -1
-          python -c "from tools.tool_registry import registry; registry.discover(); print('OpenMontage registry OK')"
+          test -f projects/almusaileem/output/almusaileem-microcement-reel.mp4
+          ffprobe -v error -show_entries stream=width,height -show_entries format=duration,size -of default=noprint_wrappers=1 projects/almusaileem/output/almusaileem-microcement-reel.mp4
 
-      - name: Render zero-key MP4
-        run: python render_demo.py focusflow-pitch
-
-      - name: Verify rendered video
-        run: |
-          test -f projects/demos/renders/focusflow-pitch.mp4
-          ffprobe -v error -show_entries format=duration,size -of default=noprint_wrappers=1 projects/demos/renders/focusflow-pitch.mp4
-
-      - name: Upload MP4
+      - name: Upload finished MP4
         uses: actions/upload-artifact@v4
         with:
-          name: openmontage-first-video
-          path: projects/demos/renders/focusflow-pitch.mp4
+          name: almusaileem-microcement-reel
+          path: projects/almusaileem/output/almusaileem-microcement-reel.mp4
           if-no-files-found: error
