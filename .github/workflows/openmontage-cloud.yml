@@ -1,4 +1,4 @@
-name: Almusaileem Vertical Video
+name: Almusaileem Pro Reel
 
 on:
   workflow_dispatch:
@@ -16,28 +16,38 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install FFmpeg
+      - name: Install FFmpeg and Arabic font
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg
+          sudo apt-get install -y ffmpeg fonts-noto-core
 
-      - name: Create Almusaileem 9x16 reel
+      - name: Build fast-cut microcement reel
         run: |
           mkdir -p projects/almusaileem/output
-          ffmpeg -y -i projects/VID-20260921-WA0004.mp4 \
-            -vf "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,eq=contrast=1.04:saturation=1.03:brightness=0.01,fade=t=in:st=0:d=0.35,fade=t=out:st=18.4:d=0.6" \
-            -c:v libx264 -preset medium -crf 19 -pix_fmt yuv420p \
-            -c:a aac -b:a 192k -movflags +faststart \
-            projects/almusaileem/output/almusaileem-microcement-reel.mp4
+          FONT=/usr/share/fonts/truetype/noto/NotoSansArabic-Bold.ttf
+          ffmpeg -y -i projects/VID-20260921-WA0004.mp4 -filter_complex "
+          [0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,eq=contrast=1.06:saturation=1.04:brightness=0.01,split=4[v1][v2][v3][v4];
+          [v1]trim=start=0:end=3.2,setpts=PTS-STARTPTS,crop=1000:1778:40:71,scale=1080:1920[v1o];
+          [v2]trim=start=6.0:end=10.2,setpts=PTS-STARTPTS,crop=930:1653:75:133,scale=1080:1920[v2o];
+          [v3]trim=start=11.0:end=15.0,setpts=PTS-STARTPTS,crop=980:1742:50:89,scale=1080:1920[v3o];
+          [v4]trim=start=15.0:end=19.0,setpts=PTS-STARTPTS[v4o];
+          [v1o][v2o]xfade=transition=fade:duration=0.22:offset=2.98[x1];
+          [x1][v3o]xfade=transition=fade:duration=0.22:offset=6.96[x2];
+          [x2][v4o]xfade=transition=fade:duration=0.22:offset=10.74,
+          drawtext=fontfile=$FONT:text='تجديد الحمام بدون تكسير؟':fontcolor=white:fontsize=68:borderw=3:bordercolor=black@0.7:x=(w-text_w)/2:y=170:enable='between(t,0.2,2.8)',
+          drawtext=fontfile=$FONT:text='مايكروسمنت الكويت':fontcolor=white:fontsize=58:borderw=3:bordercolor=black@0.7:x=(w-text_w)/2:y=h-300:enable='between(t,7.0,10.5)',
+          drawtext=fontfile=$FONT:text='المسيليم للأصباغ والديكور':fontcolor=white:fontsize=48:borderw=3:bordercolor=black@0.75:x=(w-text_w)/2:y=h-300:enable='between(t,11.0,14.5)',
+          fade=t=in:st=0:d=0.18,fade=t=out:st=14.3:d=0.45[v]
+          " -map "[v]" -map 0:a? -t 14.75 -c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p -c:a aac -b:a 192k -movflags +faststart projects/almusaileem/output/almusaileem-microcement-pro-reel.mp4
 
       - name: Verify output
         run: |
-          test -f projects/almusaileem/output/almusaileem-microcement-reel.mp4
-          ffprobe -v error -show_entries stream=width,height -show_entries format=duration,size -of default=noprint_wrappers=1 projects/almusaileem/output/almusaileem-microcement-reel.mp4
+          test -f projects/almusaileem/output/almusaileem-microcement-pro-reel.mp4
+          ffprobe -v error -show_entries stream=width,height -show_entries format=duration,size -of default=noprint_wrappers=1 projects/almusaileem/output/almusaileem-microcement-pro-reel.mp4
 
       - name: Upload finished MP4
         uses: actions/upload-artifact@v4
         with:
-          name: almusaileem-microcement-reel
-          path: projects/almusaileem/output/almusaileem-microcement-reel.mp4
+          name: almusaileem-microcement-pro-reel
+          path: projects/almusaileem/output/almusaileem-microcement-pro-reel.mp4
           if-no-files-found: error
