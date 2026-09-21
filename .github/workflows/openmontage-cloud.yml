@@ -1,4 +1,4 @@
-name: OpenMontage Cloud Test
+name: OpenMontage Cloud Render
 
 on:
   workflow_dispatch:
@@ -9,9 +9,9 @@ on:
       - ".github/workflows/openmontage-cloud.yml"
 
 jobs:
-  test-openmontage:
+  render-openmontage:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -44,31 +44,24 @@ jobs:
       - name: Prepare environment
         run: cp -n .env.example .env || true
 
-      - name: Verify runtime
+      - name: Verify OpenMontage
         run: |
           python --version
           node --version
           ffmpeg -version | head -1
+          python -c "from tools.tool_registry import registry; registry.discover(); print('OpenMontage registry OK')"
 
-      - name: Discover OpenMontage capabilities
+      - name: Render zero-key MP4
+        run: python render_demo.py focusflow-pitch
+
+      - name: Verify rendered video
         run: |
-          python -c "from tools.tool_registry import registry; import json; registry.discover(); print(json.dumps(registry.support_envelope(), indent=2))"
+          test -f projects/demos/renders/focusflow-pitch.mp4
+          ffprobe -v error -show_entries format=duration,size -of default=noprint_wrappers=1 projects/demos/renders/focusflow-pitch.mp4
 
-      - name: Save diagnostic report
-        if: always()
-        run: |
-          mkdir -p artifacts
-          {
-            echo "OpenMontage cloud diagnostic"
-            date -u
-            python --version 2>&1
-            node --version 2>&1
-            ffmpeg -version 2>&1 | head -1
-          } > artifacts/diagnostic.txt
-
-      - name: Upload diagnostic
-        if: always()
+      - name: Upload MP4
         uses: actions/upload-artifact@v4
         with:
-          name: openmontage-diagnostic
-          path: artifacts/
+          name: openmontage-first-video
+          path: projects/demos/renders/focusflow-pitch.mp4
+          if-no-files-found: error
