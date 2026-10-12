@@ -39,28 +39,38 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
-          mkdir -p release-files
           python - <<'PY'
           from pathlib import Path
-          import shutil, json, os
-          matches = list(Path('almusaileem-video/output').rglob('almusaileem-15s.mp4'))
-          if len(matches) != 1:
+          import shutil, json, os, base64, subprocess
+          videos = list(Path('almusaileem-video/output').rglob('almusaileem-15s.mp4'))
+          if len(videos) != 1:
               raise SystemExit('Expected exactly one completed video')
-          video = matches[0]
-          shutil.copyfile(video, 'release-files/almusaileem-15s.mp4')
-          shutil.copyfile(video.parent / 'report.json', 'release-files/report.json')
-          shutil.copyfile('almusaileem-video/assets/03.jpg', 'release-files/poster.jpg')
-          tag = 'almusaileem-video-' + os.environ['GITHUB_RUN_ID']
-          base = 'https://github.com/' + os.environ['GITHUB_REPOSITORY'] + '/releases/download/' + tag + '/'
-          (video.parent / 'permanent-links.json').write_text(json.dumps({'video': base + 'almusaileem-15s.mp4', 'poster': base + 'poster.jpg'}, indent=2))
+          video = videos[0]
+          files = {'almusaileem-15s.mp4': video, 'report.json': video.parent / 'report.json', 'poster.jpg': Path('almusaileem-video/assets/03.jpg')}
+          repo = os.environ['GITHUB_REPOSITORY']
+          folder = 'almusaileem-video/published/' + os.environ['GITHUB_RUN_ID']
+          for name, file in files.items():
+              if file.stat().st_size > 25 * 1024 * 1024:
+                  raise SystemExit('Output exceeds the publishing size limit')
+              endpoint = 'repos/' + repo + '/contents/' + folder + '/' + name
+              exists = subprocess.run(['gh','api',endpoint],capture_output=True,text=True)
+              if exists.returncode == 0:
+                  print('Already saved:', name)
+                  continue
+              if '404' not in exists.stderr:
+                  raise SystemExit(exists.stderr)
+              payload = {'message': 'Save Almusaileem video output ' + os.environ['GITHUB_RUN_ID'], 'branch': 'main', 'content': base64.b64encode(file.read_bytes()).decode()}
+              result = subprocess.run(['gh','api','--method','PUT',endpoint,'--input','-'],input=json.dumps(payload),capture_output=True,text=True)
+              if result.returncode:
+                  raise SystemExit(result.stderr)
+              print('Saved:', name)
+          base = 'https://raw.githubusercontent.com/' + repo + '/main/' + folder + '/'
+          links = {'video': base + 'almusaileem-15s.mp4', 'poster': base + 'poster.jpg'}
+          (video.parent / 'permanent-links.json').write_text(json.dumps(links,indent=2))
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:
+              f.write('Permanent video: ' + links['video'] + '\\n')
+          
           PY
-          tag="almusaileem-video-${GITHUB_RUN_ID}"
-          if gh release view "$tag" >/dev/null 2>&1; then
-            echo "Permanent release already exists: $tag"
-          else
-            gh release create "$tag" release-files/* --target "$GITHUB_SHA" --latest=false --title "Almusaileem video ${GITHUB_RUN_NUMBER}" --notes "Video and poster saved with permanent download links."
-          fi
-          echo "Permanent video: https://github.com/${GITHUB_REPOSITORY}/releases/download/$tag/almusaileem-15s.mp4" >> "$GITHUB_STEP_SUMMARY"
       - name: Download video and report
         if: always()
         uses: actions/upload-artifact@v4
