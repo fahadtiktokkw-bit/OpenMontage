@@ -1,0 +1,41 @@
+name: Preserve first Almusaileem video
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [.github/workflows/almusaileem-preserve-first-video.yml]
+permissions:
+  actions: read
+  contents: write
+jobs:
+  preserve:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Archive completed video
+        run: |
+          tag="almusaileem-video-38285281404"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Video already preserved"
+            exit 0
+          fi
+          gh run download 38285281404 --name almusaileem-video-1 --dir archive
+          mkdir -p release-files
+          python - <<'PY'
+          from pathlib import Path
+          import shutil, json
+          videos = list(Path('archive').rglob('almusaileem-15s.mp4'))
+          if len(videos) != 1:
+              raise SystemExit('Expected one archived video')
+          video = videos[0]
+          shutil.copyfile(video, 'release-files/almusaileem-15s.mp4')
+          shutil.copyfile(video.parent / 'report.json', 'release-files/report.json')
+          shutil.copyfile('almusaileem-video/assets/03.jpg', 'release-files/poster.jpg')
+          print((video.parent / 'report.json').read_text())
+          PY
+          gh release create "$tag" release-files/* --target e7103fc997999b594217143b22be28836b70145c --latest=false --title "Almusaileem microcement video" --notes "Saved output from the first completed free video run."
+          echo "https://github.com/${GITHUB_REPOSITORY}/releases/download/$tag/almusaileem-15s.mp4" >> "$GITHUB_STEP_SUMMARY"
