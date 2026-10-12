@@ -34,10 +34,11 @@ def main():
     if len(scenes) != 3:
         raise ValueError('This template requires exactly 3 scenes')
     mode = os.environ.get('VOICE_MODE', 'edge')
-    if mode not in {'edge', 'uploaded', 'silent'}:
+    if mode not in {'edge', 'uploaded', 'silent', 'elevenlabs'}:
         raise ValueError('Unknown voice mode')
     audio = OUT / 'timeline.wav'
     source = None
+    voice_usage = None
     if mode == 'uploaded':
         source = BASE / 'assets/voice.wav'
         if not source.is_file():
@@ -56,6 +57,10 @@ def main():
             source = None
             warnings.append('Free male TTS failed; video is silent. '
                             'Use uploaded voice for natural narration. ' + type(exc).__name__)
+    if mode == 'elevenlabs':
+        from elevenlabs_voice import generate
+        source = OUT / 'voice.mp3'
+        voice_usage = generate(cfg['script'], source)
     if source is None:
         run(['ffmpeg', '-y', '-v', 'error', '-f', 'lavfi', '-i',
              'anullsrc=r=44100:cl=mono', '-t', '15', str(audio)])
@@ -131,7 +136,7 @@ def main():
         raise RuntimeError('Unexpected output duration')
     report={'status':'success','duration_seconds':seconds(video),
             'voice_mode':mode,'audible_voice':source is not None,'warnings':warnings,
-            'paid_api_calls':0,'title':cfg.get('subject','مايكروسمنت فوق السيراميك'),
+            'paid_api_calls':1 if mode == 'elevenlabs' else 0,'voice_usage':voice_usage,'title':cfg.get('subject','مايكروسمنت فوق السيراميك'),
             'illustrative':cfg.get('illustrative',False)}
     (OUT/'report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf8')
     for p in OUT.glob('label-*.png'): p.unlink()
