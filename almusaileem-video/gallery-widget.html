@@ -19,7 +19,7 @@ fetch(base+'OpenMontage/main/almusaileem-video/published/index.json',{cache:'no-
 .then(function(items){
 if(!Array.isArray(items))return;
 var cards=document.createDocumentFragment(),count=0;
-items.slice().reverse().forEach(function(item){
+items.forEach(function(item){
 if(!valid(item.video)||!valid(item.poster))return;
 var card=document.createElement('article');card.className='alm-video-card';
 var title=document.createElement('h2');title.textContent=item.title||'فيديو من المسيليم';card.appendChild(title);
