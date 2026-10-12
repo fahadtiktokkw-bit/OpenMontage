@@ -9,7 +9,7 @@ on:
         type: choice
         options: [edge, uploaded, silent]
 permissions:
-  contents: read
+  contents: write
 concurrency:
   group: almusaileem-video
   cancel-in-progress: false
@@ -34,6 +34,33 @@ jobs:
         env:
           VOICE_MODE: ${{ inputs.voice }}
         run: python almusaileem-video/render.py
+      - name: Save permanent video link
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          mkdir -p release-files
+          python - <<'PY'
+          from pathlib import Path
+          import shutil, json, os
+          matches = list(Path('almusaileem-video/output').rglob('almusaileem-15s.mp4'))
+          if len(matches) != 1:
+              raise SystemExit('Expected exactly one completed video')
+          video = matches[0]
+          shutil.copyfile(video, 'release-files/almusaileem-15s.mp4')
+          shutil.copyfile(video.parent / 'report.json', 'release-files/report.json')
+          shutil.copyfile('almusaileem-video/assets/03.jpg', 'release-files/poster.jpg')
+          tag = 'almusaileem-video-' + os.environ['GITHUB_RUN_ID']
+          base = 'https://github.com/' + os.environ['GITHUB_REPOSITORY'] + '/releases/download/' + tag + '/'
+          (video.parent / 'permanent-links.json').write_text(json.dumps({'video': base + 'almusaileem-15s.mp4', 'poster': base + 'poster.jpg'}, indent=2))
+          PY
+          tag="almusaileem-video-${GITHUB_RUN_ID}"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Permanent release already exists: $tag"
+          else
+            gh release create "$tag" release-files/* --target "$GITHUB_SHA" --latest=false --title "Almusaileem video ${GITHUB_RUN_NUMBER}" --notes "Video and poster saved with permanent download links."
+          fi
+          echo "Permanent video: https://github.com/${GITHUB_REPOSITORY}/releases/download/$tag/almusaileem-15s.mp4" >> "$GITHUB_STEP_SUMMARY"
       - name: Download video and report
         if: always()
         uses: actions/upload-artifact@v4
