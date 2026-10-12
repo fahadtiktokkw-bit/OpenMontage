@@ -1,7 +1,5 @@
 name: Almusaileem full input validation
 on:
-  push:
-    paths: ['.github/workflows/almusaileem-input-validation.yml']
   workflow_dispatch:
 permissions:
   contents: write
