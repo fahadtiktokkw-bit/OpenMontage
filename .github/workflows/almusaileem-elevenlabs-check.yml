@@ -31,13 +31,19 @@ jobs:
           metadata=request('/v1/voices/'+voice,key)
           voice_ok=(metadata.get('labels') or {}).get('gender','').lower()=='male'
           ready=True
+          reason=None
           try:
               budget(subscription,'Connection check')
-          except RuntimeError:
+          except RuntimeError as exc:
               ready=False
+              message=str(exc)
+              reason=('commercial_license_required' if message.startswith('A current commercially')
+                      else 'overages_must_be_disabled' if message.startswith('Disable ElevenLabs')
+                      else 'insufficient_included_credits' if message.startswith('Insufficient')
+                      else 'account_policy_not_verified')
           result={'connected':True,'selected_male_voice_available':voice_ok,
                   'generation_policy_ready':ready and voice_ok,
-                  'generation_requests':0,'purchases':0}
+                  'generation_requests':0,'purchases':0,'generation_block_reason':reason}
           print(json.dumps(result))
           with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:
               f.write('## ElevenLabs connection\n\n')
