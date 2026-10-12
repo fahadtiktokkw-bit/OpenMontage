@@ -1,7 +1,5 @@
 name: Almusaileem ElevenLabs connection check
 on:
-  push:
-    paths: ['.github/workflows/almusaileem-elevenlabs-check.yml']
   workflow_dispatch:
 permissions:
   contents: read
