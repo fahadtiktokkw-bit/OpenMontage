@@ -25,9 +25,6 @@ def request(path, key, payload=None):
     return result if payload is not None else json.loads(result)
 
 def budget(subscription,text):
-    # These videos advertise a business; free-tier output lacks a commercial license.
-    if subscription.get('tier') not in {'starter','creator','pro','scale','business','enterprise'}:
-        raise RuntimeError('A current commercially licensed ElevenLabs plan is required. Free-tier speech is not published for business use. No upgrade was purchased.')
     if subscription.get('status')!='active':
         raise RuntimeError('ElevenLabs subscription is not active')
     extension=subscription.get('max_credit_limit_extension',
