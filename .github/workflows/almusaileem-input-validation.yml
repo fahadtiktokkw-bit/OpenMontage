@@ -1,0 +1,55 @@
+name: Almusaileem full input validation
+on:
+  push:
+    paths: ['.github/workflows/almusaileem-input-validation.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: almusaileem-video
+  cancel-in-progress: false
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install free tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+          git clone https://github.com/harry0703/MoneyPrinterTurbo.git almusaileem-video/engine
+          git -C almusaileem-video/engine checkout bd6939b61292d2acf435e0c8bd442470843a2781
+          python -m pip install -r almusaileem-video/engine/requirements.txt
+          python -m pip check
+      - name: Prepare your request
+        env:
+          REQUEST_TOPIC: 'تركيب المايكروسمنت فوق السيراميك'
+          REQUEST_SCRIPT: 'مايكروسمنت فوق السيراميك؟ إي، إذا السطح ثابت. نجهّز السطح ونعالج الفواصل، ونطبّق المايكروسمنت والحماية. المسيليم للأصباغ والديكور.'
+          REQUEST_IMAGES: 'https://raw.githubusercontent.com/fahadtiktokkw-bit/OpenMontage/main/almusaileem-video/assets/01.jpg|https://raw.githubusercontent.com/fahadtiktokkw-bit/OpenMontage/main/almusaileem-video/assets/02.jpg|https://raw.githubusercontent.com/fahadtiktokkw-bit/OpenMontage/main/almusaileem-video/assets/03.jpg'
+          REQUEST_TITLES: 'مايكروسمنت فوق السيراميك؟|التجهيز يحدد النتيجة|تشطيب متصل بلا فواصل'
+          REQUEST_DETAILS: 'إذا السطح ثابت ومناسب|تجهيز السطح ومعالجة الفواصل|طبقات مايكروسمنت وحماية نهائية'
+          REQUEST_AUDIO: 'https://raw.githubusercontent.com/fahadtiktokkw-bit/almusaileem-images/main/almusaileem-tajawal-gulf-male-15s.mp4'
+          REQUEST_ILLUSTRATIVE: 'true'
+        run: python almusaileem-video/prepare_request.py
+      - name: Produce video
+        env:
+          VOICE_MODE: uploaded
+        run: python almusaileem-video/render.py
+      - name: Save permanent video and update gallery
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          REQUEST_GALLERY: 'true'
+        run: python almusaileem-video/publish.py
+      - name: Download video and report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: almusaileem-validation-${{ github.run_id }}
+          path: almusaileem-video/output/
+          if-no-files-found: warn
+          retention-days: 1
