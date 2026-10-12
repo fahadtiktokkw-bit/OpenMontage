@@ -25,7 +25,7 @@ def request(path, key, payload=None):
     return result if payload is not None else json.loads(result)
 
 def budget(subscription,text):
-    if subscription.get('status')!='active':
+    if subscription.get('status') not in {'active','free'}:
         raise RuntimeError('ElevenLabs subscription is not active')
     extension=subscription.get('max_credit_limit_extension',
         subscription.get('max_character_limit_extension'))
