@@ -7,7 +7,7 @@
 1. الملفات موجودة في almusaileem-video، وملف التشغيل في .github/workflows/almusaileem-free-video.yml.
 2. افتح Actions ثم Almusaileem free video ثم Run workflow.
 3. اختر الصوت: edge صوت رجل كويتي مجاني؛ uploaded تسجيلك في assets/voice.wav؛ silent بدون صوت.
-4. بعد اكتمال المهمة، حمّل الناتج من Artifacts. مدة الاحتفاظ يوم واحد، فاحفظ الفيديو عندك.
+4. بعد اكتمال المهمة، يظهر رابط الفيديو الثابت في ملخص التشغيل. تُحفظ النسخة المنشورة في almusaileem-video/published/<run-id>/ مع صورة الغلاف والتقرير. ملف Artifacts يبقى يوماً واحداً، لكن حذفه لا يؤثر على النسخة المنشورة بالمستودع.
 
 لتغيير المحتوى: بدّل الصور assets/01.jpg إلى 03.jpg، وعدّل النص والعناوين في config.json.
 صور المثال مولّدة للتوضيح. اضبط illustrative=false فقط عند استعمال صور التنفيذ الحقيقية.
@@ -40,3 +40,10 @@ VOICE_MODE=silent python render.py
 
 المصدر: https://github.com/harry0703/MoneyPrinterTurbo
 الفوترة: https://docs.github.com/en/billing/concepts/product-billing/github-actions
+
+
+## الحفظ الثابت
+
+النشر إلى المستودع صار آلياً بعد نجاح إنتاج الفيديو، باستخدام صلاحية contents: write. كل تشغيل له مجلد مستقل، ولا يُستبدل فيديو منشور سابقاً. يمكن تضمين رابط MP4 الثابت في أي مقال مناسب. لا تُعدّل الأداة مقالات Blogger تلقائياً؛ تضمين الفيديو في مقال جديد خطوة منفصلة.
+
+النسخة الأولى حُفظت في published/38285281404. تقريرها يؤكد أنها صامتة لأن Edge رفض الاتصال. فيديو المقال المنشور بصوته الخليجي موجود في مستودع almusaileem-images، ولم يتم استبداله بنسخة الاختبار الصامتة.
