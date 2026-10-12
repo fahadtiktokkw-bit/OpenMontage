@@ -3,11 +3,14 @@ on:
   workflow_dispatch:
     inputs:
       voice:
-        description: 'الصوت: edge مجاني، uploaded تسجيلك، silent صامت'
+        description: 'الصوت: elevenlabs رصيد حسابك، uploaded تسجيلك، edge، silent'
         required: true
         default: silent
         type: choice
-        options: [edge, uploaded, silent]
+        options: [elevenlabs, uploaded, edge, silent]
+      elevenlabs_voice_id:
+        description: 'Voice ID لصوت الرجل العربي (اختياري إذا مضبوط بمتغيرات المستودع)'
+        type: string
       topic:
         description: 'موضوع الفيديو (اتركه فارغاً للمثال الحالي)'
         type: string
@@ -69,6 +72,8 @@ jobs:
       - name: Produce video
         env:
           VOICE_MODE: ${{ inputs.audio_url != '' && 'uploaded' || inputs.voice }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          ELEVENLABS_VOICE_ID: ${{ inputs.elevenlabs_voice_id || vars.ELEVENLABS_VOICE_ID }}
         run: python almusaileem-video/render.py
       - name: Save permanent video and update gallery
         env:
