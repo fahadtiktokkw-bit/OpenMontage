@@ -44,7 +44,7 @@ VOICE_MODE=silent python render.py
 الربط البرمجي جاهز، والتفعيل يحتاج مفتاح API وVoice ID من حسابك.
 
 1. في GitHub: Settings → Secrets and variables → Actions → Secrets، أضف ELEVENLABS_API_KEY. لا تضعه في الكود أو المحادثة.
-2. أضف ELEVENLABS_VOICE_ID كمتغير Actions أو اكتب Voice ID في حقل التشغيل. اختر صوت رجل عربي مناسب، قياسي السعر أو صوتاً تملكه. لا ينشئ الربط أصواتاً مستنسخة أو مفاتيح جديدة.
+2. أضف ELEVENLABS_VOICE_ID كمتغير Actions أو اكتب Voice ID في حقل التشغيل. اختر صوت رجل عربي مناسب، من مكتبة الأصوات أو صوتاً تملكه. أصوات المكتبة قد تستهلك رصيداً أكثر؛ يبقى تجاوز الرصيد ممنوعاً. لا ينشئ الربط أصواتاً مستنسخة أو مفاتيح جديدة.
 3. المفتاح يحتاج صلاحية قراءة بيانات الحساب والرصيد والأصوات، وتوليد Text to Speech فقط.
 4. في ElevenLabs عطّل usage-based billing، ليكون max_credit_limit_extension=0. الربط يتوقف إن لم يمكن التحقق من ذلك.
 5. اختر elevenlabs عند Run workflow. وجود audio_url يختار uploaded بدلاً منه.
@@ -57,3 +57,5 @@ VOICE_MODE=silent python render.py
 المراجع: https://elevenlabs.io/docs/api-reference/user/subscription/get
 https://elevenlabs.io/docs/api-reference/text-to-speech/convert
 https://help.elevenlabs.io/hc/en-us/articles/13313564601361-Can-I-publish-the-content-I-generate-on-the-platform
+
+الصوت المحدد من عينة الحساب: Nasser AlJubaily - Authentic Saudi Pro، Voice ID: cFUFIbKkO2iZFwS8cRnY. تم حفظه في متغير Actions ELEVENLABS_VOICE_ID. مفتاح API لم يُحفظ بعد؛ لا يزال التفعيل بانتظار المستخدم.
