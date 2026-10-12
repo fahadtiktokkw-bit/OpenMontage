@@ -1,0 +1,44 @@
+name: Almusaileem free video
+on:
+  workflow_dispatch:
+    inputs:
+      voice:
+        description: 'الصوت: edge مجاني، uploaded تسجيلك، silent صامت'
+        required: true
+        default: edge
+        type: choice
+        options: [edge, uploaded, silent]
+permissions:
+  contents: read
+concurrency:
+  group: almusaileem-video
+  cancel-in-progress: false
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install free tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+          git clone https://github.com/harry0703/MoneyPrinterTurbo.git almusaileem-video/engine
+          git -C almusaileem-video/engine checkout bd6939b61292d2acf435e0c8bd442470843a2781
+          python -m pip install -r almusaileem-video/engine/requirements.txt
+          python -m pip check
+      - name: Produce video
+        env:
+          VOICE_MODE: ${{ inputs.voice }}
+        run: python almusaileem-video/render.py
+      - name: Download video and report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: almusaileem-video-${{ github.run_number }}
+          path: almusaileem-video/output/
+          if-no-files-found: warn
+          retention-days: 1

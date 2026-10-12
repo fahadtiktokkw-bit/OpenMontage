@@ -1,0 +1,13 @@
+{
+  "status": "success",
+  "duration_seconds": 15.0,
+  "voice_mode": "silent",
+  "audible_voice": false,
+  "warnings": [],
+  "paid_api_calls": 0,
+  "tested_locally": true,
+  "github_run_tested": false,
+  "scene_count": 3,
+  "workflow_syntax_checked": true,
+  "test_note": "نجح الاختبار المحلي بدون صوت. خدمة Edge على GitHub لم تختبر بعد."
+}
