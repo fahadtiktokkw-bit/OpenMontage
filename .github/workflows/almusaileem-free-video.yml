@@ -5,9 +5,35 @@ on:
       voice:
         description: 'الصوت: edge مجاني، uploaded تسجيلك، silent صامت'
         required: true
-        default: edge
+        default: silent
         type: choice
         options: [edge, uploaded, silent]
+      topic:
+        description: 'موضوع الفيديو (اتركه فارغاً للمثال الحالي)'
+        type: string
+      script:
+        description: 'نص التعليق الصوتي القصير'
+        type: string
+      image_urls:
+        description: '3 روابط صور HTTPS، افصل بينها بعلامة |'
+        type: string
+      titles:
+        description: '3 عناوين للمشاهد، افصل بينها بعلامة |'
+        type: string
+      details:
+        description: '3 نصوص قصيرة للمشاهد، افصل بينها بعلامة |'
+        type: string
+      audio_url:
+        description: 'رابط تسجيلك الصوتي: MP3 أو WAV أو M4A'
+        type: string
+      illustrative:
+        description: 'الصور تصاميم توضيحية وليست صور تنفيذ'
+        type: boolean
+        default: true
+      gallery:
+        description: 'إضافة الفيديو تلقائياً لمعرض الموقع'
+        type: boolean
+        default: true
 permissions:
   contents: write
 concurrency:
@@ -30,47 +56,26 @@ jobs:
           git -C almusaileem-video/engine checkout bd6939b61292d2acf435e0c8bd442470843a2781
           python -m pip install -r almusaileem-video/engine/requirements.txt
           python -m pip check
+      - name: Prepare your request
+        env:
+          REQUEST_TOPIC: ${{ inputs.topic }}
+          REQUEST_SCRIPT: ${{ inputs.script }}
+          REQUEST_IMAGES: ${{ inputs.image_urls }}
+          REQUEST_TITLES: ${{ inputs.titles }}
+          REQUEST_DETAILS: ${{ inputs.details }}
+          REQUEST_AUDIO: ${{ inputs.audio_url }}
+          REQUEST_ILLUSTRATIVE: ${{ inputs.illustrative }}
+        run: python almusaileem-video/prepare_request.py
       - name: Produce video
         env:
           VOICE_MODE: ${{ inputs.voice }}
         run: python almusaileem-video/render.py
-      - name: Save permanent video link
+      - name: Save permanent video and update gallery
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import shutil, json, os, base64, subprocess
-          videos = list(Path('almusaileem-video/output').rglob('almusaileem-15s.mp4'))
-          if len(videos) != 1:
-              raise SystemExit('Expected exactly one completed video')
-          video = videos[0]
-          files = {'almusaileem-15s.mp4': video, 'report.json': video.parent / 'report.json', 'poster.jpg': Path('almusaileem-video/assets/03.jpg')}
-          repo = os.environ['GITHUB_REPOSITORY']
-          folder = 'almusaileem-video/published/' + os.environ['GITHUB_RUN_ID']
-          for name, file in files.items():
-              if file.stat().st_size > 25 * 1024 * 1024:
-                  raise SystemExit('Output exceeds the publishing size limit')
-              endpoint = 'repos/' + repo + '/contents/' + folder + '/' + name
-              exists = subprocess.run(['gh','api',endpoint],capture_output=True,text=True)
-              if exists.returncode == 0:
-                  print('Already saved:', name)
-                  continue
-              if '404' not in exists.stderr:
-                  raise SystemExit(exists.stderr)
-              payload = {'message': 'Save Almusaileem video output ' + os.environ['GITHUB_RUN_ID'], 'branch': 'main', 'content': base64.b64encode(file.read_bytes()).decode()}
-              result = subprocess.run(['gh','api','--method','PUT',endpoint,'--input','-'],input=json.dumps(payload),capture_output=True,text=True)
-              if result.returncode:
-                  raise SystemExit(result.stderr)
-              print('Saved:', name)
-          base = 'https://raw.githubusercontent.com/' + repo + '/main/' + folder + '/'
-          links = {'video': base + 'almusaileem-15s.mp4', 'poster': base + 'poster.jpg'}
-          (video.parent / 'permanent-links.json').write_text(json.dumps(links,indent=2))
-          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:
-              f.write('Permanent video: ' + links['video'] + '\\n')
-          
-          PY
+          REQUEST_GALLERY: ${{ inputs.gallery }}
+        run: python almusaileem-video/publish.py
       - name: Download video and report
         if: always()
         uses: actions/upload-artifact@v4
