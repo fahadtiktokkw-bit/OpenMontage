@@ -68,7 +68,7 @@ jobs:
         run: python almusaileem-video/prepare_request.py
       - name: Produce video
         env:
-          VOICE_MODE: ${{ inputs.voice }}
+          VOICE_MODE: ${{ inputs.audio_url != '' && 'uploaded' || inputs.voice }}
         run: python almusaileem-video/render.py
       - name: Save permanent video and update gallery
         env:
