@@ -1,0 +1,33 @@
+<style>
+.alm-video-gallery{direction:rtl;font-family:inherit;max-width:960px;margin:0 auto;color:#243d32}.alm-video-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px}.alm-video-card{padding:16px;background:#f4f0e8;border-radius:16px}.alm-video-card h2{font-size:22px;margin:0 0 12px}.alm-video-card video{display:block;width:100%;max-width:400px;aspect-ratio:9/16;background:#17221c;border-radius:12px;margin:auto}.alm-video-note{font-size:14px;color:#59625c}.alm-video-contact{display:inline-block;background:#274838;color:#fff!important;padding:12px 24px;border-radius:8px;text-decoration:none}
+</style>
+<section class="alm-video-gallery">
+<p>شاهد أفكار المايكروسمنت والأصباغ والديكور من المسيليم في الكويت. للاستفسار عن تنفيذ مشروعك، تواصل معنا واذكر المساحة وحالة السطح.</p>
+<div class="alm-video-grid" id="alm-video-grid">
+<article class="alm-video-card"><h2>مايكروسمنت فوق السيراميك</h2>
+<video controls playsinline preload="metadata" poster="https://raw.githubusercontent.com/fahadtiktokkw-bit/almusaileem-images/main/almusaileem-microcement-reel-cover.png"><source src="https://raw.githubusercontent.com/fahadtiktokkw-bit/almusaileem-images/main/almusaileem-tajawal-gulf-male-15s.mp4" type="video/mp4"></video>
+<p class="alm-video-note">مشاهد توضيحية للفكرة.</p></article>
+</div><p><a class="alm-video-contact" href="https://wa.me/96556510526">تواصل مع المسيليم: 56510526</a></p>
+</section>
+<script>
+(function(){
+var root=document.getElementById('alm-video-grid');
+var base='https://raw.githubusercontent.com/fahadtiktokkw-bit/';
+function valid(s){try{var u=new URL(s);return u.protocol==='https:'&&u.href.indexOf(base)===0;}catch(e){return false;}}
+fetch(base+'OpenMontage/main/almusaileem-video/published/index.json',{cache:'no-cache'})
+.then(function(r){if(!r.ok)throw new Error('index');return r.json();})
+.then(function(items){
+if(!Array.isArray(items))return;
+var cards=document.createDocumentFragment(),count=0;
+items.slice().reverse().forEach(function(item){
+if(!valid(item.video)||!valid(item.poster))return;
+var card=document.createElement('article');card.className='alm-video-card';
+var title=document.createElement('h2');title.textContent=item.title||'فيديو من المسيليم';card.appendChild(title);
+var video=document.createElement('video');video.controls=true;video.playsInline=true;video.preload='metadata';video.poster=item.poster;video.src=item.video;card.appendChild(video);
+if(item.illustrative){var note=document.createElement('p');note.className='alm-video-note';note.textContent='مشاهد توضيحية للفكرة.';card.appendChild(note);}
+cards.appendChild(card);count++;
+});
+if(count){root.replaceChildren(cards);root.dataset.loaded='true';}
+}).catch(function(){});
+})();
+</script>
