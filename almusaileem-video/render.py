@@ -106,7 +106,7 @@ def main():
     os.chdir(ENGINE)
     from app.models.schema import VideoParams, MaterialInfo
     from app.services import task
-    params = VideoParams(video_subject='مايكروسمنت فوق السيراميك',
+    params = VideoParams(video_subject=cfg.get('subject','مايكروسمنت فوق السيراميك'),
         video_script=cfg['script'],video_source='local',video_aspect='9:16',
         video_concat_mode='sequential',video_clip_duration=5,n_threads=2,
         video_materials=[MaterialInfo(provider='local',url=name) for name in material_names],
@@ -120,6 +120,8 @@ def main():
     for i in range(1,4):
         inputs += ['-loop','1','-i',str(OUT / f'label-{i}.png')]
     graph="[0:v][1:v]overlay=enable='lt(t,5)'[v1];[v1][2:v]overlay=enable='gte(t,5)*lt(t,10)'[v2];[v2][3:v]overlay=enable='gte(t,10)'[out]"
+    with Image.open(within(scenes[-1]['image'])) as poster:
+        poster.convert('RGB').save(OUT/'poster.jpg',quality=90)
     video=OUT / 'almusaileem-15s.mp4'
     run(inputs+['-filter_complex',graph,'-map','[out]','-map','0:a:0',
         '-c:v','libx264','-preset','fast','-crf','20','-pix_fmt','yuv420p',
@@ -129,7 +131,8 @@ def main():
         raise RuntimeError('Unexpected output duration')
     report={'status':'success','duration_seconds':seconds(video),
             'voice_mode':mode,'audible_voice':source is not None,'warnings':warnings,
-            'paid_api_calls':0}
+            'paid_api_calls':0,'title':cfg.get('subject','مايكروسمنت فوق السيراميك'),
+            'illustrative':cfg.get('illustrative',False)}
     (OUT/'report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf8')
     for p in OUT.glob('label-*.png'): p.unlink()
     for name in ['timeline.wav','voice.mp3']:
