@@ -35,8 +35,7 @@ jobs:
           except RuntimeError as exc:
               ready=False
               message=str(exc)
-              reason=('commercial_license_required' if message.startswith('A current commercially')
-                      else 'overages_must_be_disabled' if message.startswith('Disable ElevenLabs')
+              reason=('overages_must_be_disabled' if message.startswith('Disable ElevenLabs')
                       else 'insufficient_included_credits' if message.startswith('Insufficient')
                       else 'account_policy_not_verified')
           result={'connected':True,'selected_male_voice_available':voice_ok,
@@ -47,6 +46,6 @@ jobs:
               f.write('## ElevenLabs connection\n\n')
               f.write('Connection: confirmed\n\n')
               f.write('Selected male voice: '+('available' if voice_ok else 'requires attention')+'\n\n')
-              f.write('Generation policy: '+('ready' if ready and voice_ok else 'blocked; review account license, overage settings and included credits')+'\n\n')
+              f.write('Generation policy: '+('ready' if ready and voice_ok else 'blocked; review account status, overage settings and included credits')+'\n\n')
               f.write('No speech generated. No credit purchases. Account balances and keys are not included in this report.\n')
           PY
