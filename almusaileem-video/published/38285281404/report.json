@@ -1,0 +1,10 @@
+{
+  "status": "success",
+  "duration_seconds": 15.0,
+  "voice_mode": "edge",
+  "audible_voice": false,
+  "warnings": [
+    "Free male TTS failed; video is silent. Use uploaded voice for natural narration. WSServerHandshakeError"
+  ],
+  "paid_api_calls": 0
+}
