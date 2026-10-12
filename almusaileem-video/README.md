@@ -53,9 +53,9 @@ VOICE_MODE=silent python render.py
 نموذج الصوت eleven_multilingual_v2، طلب توليد واحد، ونص حتى 350 حرفاً. إذا فشل الصوت يتوقف التشغيل، ولا ينشر فيديو صامتاً. التسجيل الأطول من 18 ثانية يرفضه قالب الفيديو.
 التقرير يسجل استخدام ElevenLabs والرصيد المتحقق منه. paid_api_calls=1 يعني استخدام مزود مرخّص برصيده المشمول، ولا يعني شراء أو دفع جديد.
 
-فحوص الربط المحلية نجحت: منع الخطة المجانية للإعلانات، منع الفوترة الإضافية، فحص الرصيد، طلب توليد واحد، وإيقاف الطلب قبل التوليد عند نفاد الرصيد. لم يُجرَ اختبار حي مع ElevenLabs لأن المفتاح وVoice ID لم يُضافا بعد.
+فحوص الربط المحلية نجحت: منع الخطة المجانية للإعلانات، منع الفوترة الإضافية، فحص الرصيد، طلب توليد واحد، وإيقاف الطلب قبل التوليد عند نفاد الرصيد. نجح اختبار الاتصال الحي في التشغيل 38322882569: connected=true، selected_male_voice_available=true. لم يُولّد صوت ولم يُستهلك رصيد. التوليد التجاري موقوف لأن الحساب الحالي لا يشمل الترخيص التجاري (commercial_license_required).
 المراجع: https://elevenlabs.io/docs/api-reference/user/subscription/get
 https://elevenlabs.io/docs/api-reference/text-to-speech/convert
 https://help.elevenlabs.io/hc/en-us/articles/13313564601361-Can-I-publish-the-content-I-generate-on-the-platform
 
-الصوت المحدد من عينة الحساب: Nasser AlJubaily - Authentic Saudi Pro، Voice ID: cFUFIbKkO2iZFwS8cRnY. تم حفظه في متغير Actions ELEVENLABS_VOICE_ID. مفتاح API لم يُحفظ بعد؛ لا يزال التفعيل بانتظار المستخدم.
+الصوت المحدد من عينة الحساب: Nasser AlJubaily - Authentic Saudi Pro، Voice ID: cFUFIbKkO2iZFwS8cRnY. تم حفظه في متغير Actions ELEVENLABS_VOICE_ID. تم حفظ مفتاح API داخل GitHub Secrets واختُبر الاتصال الفعلي بنجاح.
