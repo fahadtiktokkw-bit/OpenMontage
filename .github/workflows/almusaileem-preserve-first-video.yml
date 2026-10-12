@@ -18,24 +18,36 @@ jobs:
       - uses: actions/checkout@v4
       - name: Archive completed video
         run: |
-          tag="almusaileem-video-38285281404"
-          if gh release view "$tag" >/dev/null 2>&1; then
-            echo "Video already preserved"
-            exit 0
-          fi
           gh run download 38285281404 --name almusaileem-video-1 --dir archive
-          mkdir -p release-files
           python - <<'PY'
           from pathlib import Path
-          import shutil, json
+          import shutil, json, os, base64, subprocess
           videos = list(Path('archive').rglob('almusaileem-15s.mp4'))
           if len(videos) != 1:
-              raise SystemExit('Expected one archived video')
+              raise SystemExit('Expected exactly one completed video')
           video = videos[0]
-          shutil.copyfile(video, 'release-files/almusaileem-15s.mp4')
-          shutil.copyfile(video.parent / 'report.json', 'release-files/report.json')
-          shutil.copyfile('almusaileem-video/assets/03.jpg', 'release-files/poster.jpg')
-          print((video.parent / 'report.json').read_text())
+          files = {'almusaileem-15s.mp4': video, 'report.json': video.parent / 'report.json', 'poster.jpg': Path('almusaileem-video/assets/03.jpg')}
+          repo = os.environ['GITHUB_REPOSITORY']
+          folder = 'almusaileem-video/published/' + '38285281404'
+          for name, file in files.items():
+              if file.stat().st_size > 25 * 1024 * 1024:
+                  raise SystemExit('Output exceeds the publishing size limit')
+              endpoint = 'repos/' + repo + '/contents/' + folder + '/' + name
+              exists = subprocess.run(['gh','api',endpoint],capture_output=True,text=True)
+              if exists.returncode == 0:
+                  print('Already saved:', name)
+                  continue
+              if '404' not in exists.stderr:
+                  raise SystemExit(exists.stderr)
+              payload = {'message': 'Save Almusaileem video output ' + '38285281404', 'branch': 'main', 'content': base64.b64encode(file.read_bytes()).decode()}
+              result = subprocess.run(['gh','api','--method','PUT',endpoint,'--input','-'],input=json.dumps(payload),capture_output=True,text=True)
+              if result.returncode:
+                  raise SystemExit(result.stderr)
+              print('Saved:', name)
+          base = 'https://raw.githubusercontent.com/' + repo + '/main/' + folder + '/'
+          links = {'video': base + 'almusaileem-15s.mp4', 'poster': base + 'poster.jpg'}
+          (video.parent / 'permanent-links.json').write_text(json.dumps(links,indent=2))
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:
+              f.write('Permanent video: ' + links['video'] + '\\n')
+          
           PY
-          gh release create "$tag" release-files/* --target e7103fc997999b594217143b22be28836b70145c --latest=false --title "Almusaileem microcement video" --notes "Saved output from the first completed free video run."
-          echo "https://github.com/${GITHUB_REPOSITORY}/releases/download/$tag/almusaileem-15s.mp4" >> "$GITHUB_STEP_SUMMARY"
