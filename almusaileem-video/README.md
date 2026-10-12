@@ -59,3 +59,8 @@ https://elevenlabs.io/docs/api-reference/text-to-speech/convert
 https://help.elevenlabs.io/hc/en-us/articles/13313564601361-Can-I-publish-the-content-I-generate-on-the-platform
 
 الصوت المحدد من عينة الحساب: Nasser AlJubaily - Authentic Saudi Pro، Voice ID: cFUFIbKkO2iZFwS8cRnY. تم حفظه في متغير Actions ELEVENLABS_VOICE_ID. تم حفظ مفتاح API داخل GitHub Secrets واختُبر الاتصال الفعلي بنجاح.
+
+## تجربة الحساب المجاني بعد إزالة شرط الترخيص
+
+التشغيل 38323651932 توقف محلياً لأن فحص الحالة كان يقبل active فقط. صُحح الفحص ليقبل free أيضاً. التشغيل 38323900412 وصل لطلب توليد صوت ناصر عبر ElevenLabs API، لكنه رُفض بخطأ HTTP 402 ولم ينتج فيديو ولم يعدّل المعرض. أصوات Voice Library غير متاحة عبر API لمستخدمي الخطة المجانية، وفق https://elevenlabs.io/docs/eleven-creative/voices/voice-library/ .
+نجح توليد النص من واجهة ElevenLabs بصوت ناصر ونموذج Eleven v4، وظهرت عينة Generation 1 مدتها نحو 12.12 ثانية. استُهلك 132 رصيداً مجانياً (9866 إلى 9734)، بدون شراء. تعثر تنزيل العينة في المتصفح الحالي؛ لم تُدمج هذه العينة في فيديو بعد. خيار uploaded يظل متاحاً لملف صوت محفوظ برابط HTTPS.
