@@ -54,11 +54,8 @@ def generate(text,target):
     info=request('/v1/voices/'+voice,key)
     if (info.get('labels') or {}).get('gender','').lower()!='male':
         raise RuntimeError('Choose an approved male voice for Almusaileem')
-    sharing=info.get('sharing') or {}
-    if sharing.get('financial_rewards_enabled') or sharing.get('rate') not in (None,0):
-        raise RuntimeError('Voice has a custom rate; choose a standard-rate voice')
-    if info.get('category')!='premade' and not info.get('is_owner'):
-        raise RuntimeError('Use a premade or owned standard-rate voice')
+    # Library voices can use more included credits. Server-side overages must
+    # remain disabled, so an insufficient balance fails instead of charging extra.
     remaining=budget(request('/v1/user/subscription',key),text)
     audio=request('/v1/text-to-speech/'+voice+'?output_format=mp3_44100_128',key,
         {'text':text,'model_id':'eleven_multilingual_v2',
