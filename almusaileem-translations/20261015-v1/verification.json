@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-15",
+  "website": "https://www.almusailem.online",
+  "publishedArticles": 69,
+  "existingTemplateTranslations": 3,
+  "newArticleDictionaries": 66,
+  "newArticleEnglishCoverage": {
+    "tested": 66,
+    "passed": 66,
+    "remainingArabicText": 0,
+    "remainingArabicImageAlternatives": 0
+  },
+  "arabicEnglishArabicRoundTrip": {
+    "tested": 66,
+    "identicalOriginalText": 66
+  },
+  "existingArticlesEnglishAndArabicSwitch": {
+    "tested": 3,
+    "passed": 3
+  },
+  "latestFeedRechecked": true,
+  "loadStrategy": "Load only the current article dictionary when English is requested; retain original Arabic; keep TOC links synchronized.",
+  "editorialReview": "All 66 titles, the full roller article, and flagged number/negation/brand passages were corrected. Other passages used local machine translation with a technical glossary."
+}

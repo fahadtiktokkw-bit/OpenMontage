@@ -56,6 +56,11 @@
       var value = en ? 'en' : languageAttributes.get(el);
       if (el.getAttribute('lang') !== value) el.setAttribute('lang', value);
     });
+    root.querySelectorAll('.site-toc a[href]').forEach(function (link) {
+      if (!link.hash) return;
+      var heading = document.getElementById(decodeURIComponent(link.hash.slice(1)));
+      if (heading && link.textContent !== heading.textContent.trim()) link.textContent = heading.textContent.trim();
+    });
     var pageTitle = en ? payload.title + ' | Almusaileem' : payload.titleAr + ' | ' + '\u0627\u0644\u0645\u0633\u064a\u0644\u064a\u0645';
     if (document.title !== pageTitle) document.title = pageTitle;
     if (meta) {
